@@ -1,0 +1,70 @@
+# Tier 1: Binary Black Hole Inspiral (2400M)
+# Serves as the template for runs B, Bh, S1, S2, Sx, and L.
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.01
+  TimeStepper:
+    AdamsMoulton:
+      Order: 4
+  StepChoosers:
+    - ErrorControl:
+        AbsoluteTolerance: 1.0e-10
+        RelativeTolerance: 1.0e-8
+
+PhaseChangeAndTriggers:
+  - Trigger:
+      TimeCompares:
+        Comparison: GreaterThanOrEqualTo
+        Value: 2400.0  # Stop precisely before the frame-fixing window transient risk
+    PhaseChanges:
+      - Stop
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 10
+          Offset: 0
+    PhaseChanges:
+      - EvaluateDampingGaugeFeedback
+
+DomainCreator:
+  BinaryCompactObject:
+    ObjectA:
+      InnerRadius: 0.792
+      OuterRadius: 20.0
+      XCoord: 7.683
+      ExciseWithBoundaryCondition: DirichletAnalytic
+    ObjectB:
+      InnerRadius: 0.792
+      OuterRadius: 20.0
+      XCoord: -7.683
+      ExciseWithBoundaryCondition: DirichletAnalytic
+    EnvelopingCube:
+      Radius: 600.0
+
+GeneralizedHarmonic:
+  GaugeCondition:
+    # Baseline defaults (A_L1=1, A_S=1, A_L2=0). 
+    # For runs S2- and S2+, modify Amplitudes in the Slurm submit script.
+    RollOnStartTime: 0.0
+    RollOnTimeWindow: 10.0
+    SpatialDecayWidth: 17.13
+    Amplitudes: [1.0, 1.0, 0.0]
+    Exponents: [2, 2, 2]
+  ConstraintDamping:
+    # Baseline defaults.
+    # For runs S1- and S1+, modify Amplitudes in the Slurm submit script.
+    Amplitudes: [0.1, 1.0, -1.0]
+
+ControlSystems:
+  DampingGaugeFeedback:
+    # For runs B, S1, and S2, set TimeConstant to 0.0 to disable feedback.
+    # For run L, leave TimeConstant at 395.0.
+    TimeConstant: 395.0
+    MaxScaleFactor: 3.0
+    ConstraintThreshold: 1.0e-8
+
+Observers:
+  VolumeFileName: "BbhVolume"
+  ReductionFileName: "BbhReductions"
+  SurfaceFileName: "BbhSurfaces"
+  ExtractionRadius: 200.0  # CCE world-tube radius
